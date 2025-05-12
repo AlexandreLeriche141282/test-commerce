@@ -21,21 +21,51 @@ const PRODUCTS = [
 function App() {
   const [cart, setCart] = useState([]);
 
+  // Ajoute ou incrémente la quantité d'un produit dans le panier
   const addToCart = (product) => {
-    setCart([...cart, { price: product.priceId, quantity: 1 }]);
+    setCart(prevCart => {
+      const found = prevCart.find(item => item.price === product.priceId);
+      if (found) {
+        return prevCart.map(item =>
+          item.price === product.priceId
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      } else {
+        return [...prevCart, { price: product.priceId, quantity: 1 }];
+      }
+    });
   };
 
-  const handleCheckout = async () => {
-  const response = await fetch('/.netlify/functions/create-checkout-session', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ items: cart }),
-  });
-  const { sessionId } = await response.json(); // <-- Correction ici
-  const stripe = await stripePromise;
-  stripe.redirectToCheckout({ sessionId });
-};
+  // Diminue la quantité ou retire le produit du panier
+  const removeFromCart = (priceId) => {
+    setCart(prevCart =>
+      prevCart
+        .map(item =>
+          item.price === priceId
+            ? { ...item, quantity: item.quantity - 1 }
+            : item
+        )
+        .filter(item => item.quantity > 0)
+    );
+  };
 
+  // Calcule le total du panier
+  const total = cart.reduce((sum, item) => {
+    const prod = PRODUCTS.find(p => p.priceId === item.price);
+    return sum + (prod ? prod.price * item.quantity : 0);
+  }, 0);
+
+  const handleCheckout = async () => {
+    const response = await fetch('/.netlify/functions/create-checkout-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: cart }),
+    });
+    const { sessionId } = await response.json();
+    const stripe = await stripePromise;
+    stripe.redirectToCheckout({ sessionId });
+  };
 
   return (
     <div style={{ padding: 40 }}>
@@ -44,17 +74,29 @@ function App() {
         {PRODUCTS.map(prod => (
           <li key={prod.id}>
             {prod.name} - {prod.price}€
-            <button onClick={() => addToCart(prod)}>Ajouter au panier</button>
+            <button onClick={() => addToCart(prod)} style={{ marginLeft: 10 }}>Ajouter au panier</button>
           </li>
         ))}
       </ul>
 
       <h2>Panier</h2>
-      <ul>
-        {cart.map((item, idx) => (
-          <li key={idx}>{PRODUCTS.find(p => p.priceId === item.price)?.name}</li>
-        ))}
-      </ul>
+      {cart.length === 0 ? (
+        <p>Votre panier est vide.</p>
+      ) : (
+        <ul>
+          {cart.map((item, idx) => {
+            const prod = PRODUCTS.find(p => p.priceId === item.price);
+            return (
+              <li key={idx}>
+                {prod?.name} - {item.quantity} × {prod?.price}€ = {item.quantity * prod?.price}€
+                <button onClick={() => removeFromCart(item.price)} style={{ marginLeft: 10 }}>Retirer</button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      <p><strong>Total : {total}€</strong></p>
 
       {cart.length > 0 && (
         <button onClick={handleCheckout}>Payer</button>
@@ -64,3 +106,4 @@ function App() {
 }
 
 export default App;
+
