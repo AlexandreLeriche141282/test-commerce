@@ -4,7 +4,6 @@ const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 exports.handler = async function(event, context) {
   const { items } = JSON.parse(event.body);
 
-  // Exemple d'items attendus : [{ price: 'prix_stripe', quantity: 1 }]
   try {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -16,7 +15,7 @@ exports.handler = async function(event, context) {
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ id: session.id }),
+      body: JSON.stringify({ sessionId: session.id }), // <-- Correction ici
     };
   } catch (error) {
     return {

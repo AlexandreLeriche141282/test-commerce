@@ -7,7 +7,7 @@ const PRODUCTS = [
   {
     id: 1,
     name: "T-shirt React",
-    priceId: "prod_SETu6Fash7A928", // Remplace par ton identifiant de prix Stripe
+    priceId: "prod_SIcHxt7PWHD95q", // Remplace par ton identifiant de prix Stripe
     price: 15,
   },
   {
@@ -26,15 +26,16 @@ function App() {
   };
 
   const handleCheckout = async () => {
-    const response = await fetch('/.netlify/functions/create-checkout-session', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ items: cart }),
-    });
-    const { id } = await response.json();
-    const stripe = await stripePromise;
-    stripe.redirectToCheckout({ sessionId: id });
-  };
+  const response = await fetch('/.netlify/functions/create-checkout-session', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ items: cart }),
+  });
+  const { sessionId } = await response.json(); // <-- Correction ici
+  const stripe = await stripePromise;
+  stripe.redirectToCheckout({ sessionId });
+};
+
 
   return (
     <div style={{ padding: 40 }}>
