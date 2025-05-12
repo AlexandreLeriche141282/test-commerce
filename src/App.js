@@ -7,13 +7,13 @@ const PRODUCTS = [
   {
     id: 1,
     name: "T-shirt React",
-    priceId: "prod_SIcHxt7PWHD95q", // Remplace par ton identifiant de prix Stripe
+    priceId: "price_1RO13GD3vO200331L49DBbpC", // Remplace par ton identifiant de prix Stripe
     price: 15,
   },
   {
     id: 2,
     name: "Mug JavaScript",
-    priceId: "prod_SETv8taclZPXa2", // Remplace par ton identifiant de prix Stripe
+    priceId: "price_1RK0xyD3vO200331K5hMYAtE", // Remplace par ton identifiant de prix Stripe
     price: 20,
   },
 ];
